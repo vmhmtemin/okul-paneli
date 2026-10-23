@@ -10,43 +10,80 @@ from .models import Link
 
 # ---------------------------------------------------------------- HTML → metin
 class _TextExtractor(HTMLParser):
-    """Basit HTML → metin dönüştürücü (ek kütüphane gerektirmez)."""
+    """HTML → okunabilir düz metin (ek kütüphane gerektirmez).
 
-    _BLOCK = {"p", "div", "br", "li", "tr", "h1", "h2", "h3", "h4", "table", "ul", "ol"}
-    _SKIP = {"style", "script", "head", "title"}
+    - <style>/<script> ve GİZLİ öğeler (display:none, mso-hide, hidden) atlanır;
+      bültenlerdeki görünmez "önizleme metni" bu sayede metne karışmaz.
+    - Tablo hücreleri " · " ile, liste öğeleri "• " ile ayrılır.
+    - Linklerin gerçek adresi metnin yanına eklenir (buton yapmak için).
+    """
+
+    _BLOCK = {"p", "div", "br", "tr", "h1", "h2", "h3", "h4", "h5", "h6", "table", "ul", "ol",
+              "section", "article", "header", "footer", "blockquote", "pre", "hr", "center"}
+    _SKIP = {"style", "script", "head", "title", "noscript", "template"}
+    _VOID = {"br", "img", "hr", "meta", "link", "input", "col", "area", "base", "wbr", "source"}
+    _HIDDEN_RX = re.compile(r"display\s*:\s*none|visibility\s*:\s*hidden|mso-hide\s*:\s*all|max-height\s*:\s*0", re.I)
 
     def __init__(self) -> None:
         super().__init__(convert_charrefs=True)
         self.parts: list[str] = []
-        self._skip_depth = 0
+        self._stack: list[tuple[str, bool]] = []      # (etiket, gizli mi)
+        self._hidden = 0
+
+    def _is_hidden(self, tag, attrs) -> bool:
+        a = dict(attrs)
+        return (tag in self._SKIP or "hidden" in a or a.get("aria-hidden") == "true"
+                or bool(self._HIDDEN_RX.search(a.get("style") or "")))
 
     def handle_starttag(self, tag, attrs):
-        if tag in self._SKIP:
-            self._skip_depth += 1
-        elif tag in self._BLOCK:
+        hidden = self._is_hidden(tag, attrs)
+        if tag not in self._VOID:
+            self._stack.append((tag, hidden))
+            if hidden:
+                self._hidden += 1
+        if self._hidden or hidden:
+            return
+        if tag in self._BLOCK:
             self.parts.append("\n")
+        elif tag == "li":
+            self.parts.append("\n• ")
+        elif tag in ("td", "th"):
+            self.parts.append(" · ")
+        elif tag == "img":
+            alt = (dict(attrs).get("alt") or "").strip()
+            if alt and len(alt) < 80:
+                self.parts.append(f" {alt} ")
         if tag == "a":
-            # Link metni yerine href önemli olabilir; sonradan link çıkarmak için ekle
-            href = dict(attrs).get("href")
-            if href and href.startswith("http"):
+            href = unwrap_redirect(dict(attrs).get("href") or "")
+            if href.startswith("http"):
                 self.parts.append(f" {href} ")
 
     def handle_endtag(self, tag):
-        if tag in self._SKIP and self._skip_depth:
-            self._skip_depth -= 1
-        elif tag in self._BLOCK:
+        # Kapanış etiketini yığında bul (bozuk HTML'e dayanıklı)
+        for i in range(len(self._stack) - 1, -1, -1):
+            if self._stack[i][0] == tag:
+                for _, h in self._stack[i:]:
+                    if h:
+                        self._hidden -= 1
+                del self._stack[i:]
+                break
+        if not self._hidden and tag in self._BLOCK:
             self.parts.append("\n")
 
     def handle_data(self, data):
-        if not self._skip_depth:
+        if not self._hidden:
             self.parts.append(data)
 
 
 def html_to_text(raw_html: str) -> str:
     parser = _TextExtractor()
     parser.feed(raw_html)
+    parser.close()
     text = html.unescape("".join(parser.parts))
-    text = re.sub(r"[ \t ]+", " ", text)
+    # görünmez dolgu karakterleri (bültenlerde önizleme metnini gizlemek için kullanılır)
+    text = re.sub("[\u200b\u200c\u200d\u034f\u00ad\ufeff]", "", text)
+    text = re.sub("[ \t\u00a0]+", " ", text)
+    text = "\n".join(line.strip(" ·") for line in text.split("\n"))   # satır başı/sonu hücre ayıraçları
     text = re.sub(r"\n\s*\n+", "\n\n", text)
     return text.strip()
 
@@ -106,6 +143,22 @@ def make_snippet(text: str, limit: int = 260) -> str:
 
 
 # ----------------------------------------------------------------- link çıkarma
+def unwrap_redirect(url: str) -> str:
+    """Google / Outlook / LinkedIn yönlendirme linklerinin içindeki gerçek adresi çıkar."""
+    from urllib.parse import parse_qs, unquote, urlparse
+    try:
+        u = urlparse(url)
+    except ValueError:
+        return url
+    host = (u.netloc or "").lower()
+    q = parse_qs(u.query)
+    if host.endswith("safelinks.protection.outlook.com") and "url" in q:
+        return unquote(q["url"][0])
+    if host in ("www.google.com", "google.com") and u.path == "/url":
+        return unquote((q.get("q") or q.get("url") or [url])[0])
+    return url
+
+
 _URL_RE = re.compile(r"https?://[^\s<>\"')\]]+", re.IGNORECASE)
 
 _LINK_LABELS = [
@@ -125,7 +178,7 @@ def extract_links(text: str, limit: int = 4) -> list[Link]:
     seen: set[str] = set()
     links: list[Link] = []
     for match in _URL_RE.finditer(text):
-        url = match.group(0).rstrip(".,;:")
+        url = unwrap_redirect(match.group(0).rstrip(".,;:"))
         if url in seen or _LINK_IGNORE.search(url):
             continue
         seen.add(url)

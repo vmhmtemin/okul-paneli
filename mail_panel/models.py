@@ -19,6 +19,17 @@ class Mail:
     date: datetime          # saat dilimi bilgili (aware) datetime
     body: str               # düz metin gövde (imza temizlenmeden önce)
     is_bulk: bool = False   # posta listesi / toplu duyuru / kişiye özel değil
+    attachments: list[str] = field(default_factory=list)   # ek dosya adları
+    event: "CalendarEvent | None" = None                     # takvim daveti (.ics) varsa
+
+
+@dataclass
+class CalendarEvent:
+    """Mailin içindeki takvim davetinden (text/calendar) okunan etkinlik."""
+    start: datetime
+    has_time: bool
+    summary: str = ""
+    location: str = ""
 
 
 @dataclass
@@ -39,6 +50,7 @@ class AnalyzedMail:
     links: list[Link] = field(default_factory=list)
     snippet: str = ""                   # imzası temizlenmiş kısa özet
     is_new: bool = False                # son taramadan beri mi geldi?
+    thread_count: int = 1               # aynı konudaki yanıt zinciri uzunluğu
 
     @property
     def item_id(self) -> str:

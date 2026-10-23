@@ -1,6 +1,7 @@
 """Analiz edilmiş maillerden panel verisini (özet, yapılacaklar, kartlar) oluşturur."""
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 
@@ -78,6 +79,7 @@ class Report:
     new_academic: int
     new_club: int
     urgent_count: int
+    mails: list[AnalyzedMail] = field(default_factory=list)   # panelde okunabilecek tüm mailler
 
 
 def _todo_from(a: AnalyzedMail, now: datetime) -> TodoItem | None:
@@ -160,8 +162,42 @@ def _summary(new: list[AnalyzedMail], todos: list[TodoItem], now: datetime, wind
     return lines
 
 
+_REPLY_PREFIX = re.compile(r"^\s*((re|fw|fwd|ynt|yan|ilt|ileti|cvp|aw|wg)\s*(\[\d+\])?\s*:\s*)+", re.I)
+
+
+def thread_key(a: AnalyzedMail) -> str:
+    """Aynı konunun yanıt/iletme zincirini tek kayıtta toplamak için anahtar."""
+    subj = _REPLY_PREFIX.sub("", a.mail.subject)
+    return f"{a.category}|{a.group}|{' '.join(subj.lower().split())}"
+
+
+def dedupe_threads(analyzed: list[AnalyzedMail]) -> list[AnalyzedMail]:
+    """'RE: Proje 1' ile 'Proje 1' aynı iş: en yenisini tut; yenisinde tarih yoksa
+    zincirdeki en son tarihi ve linkleri ona aktar."""
+    by_key: dict[str, list[AnalyzedMail]] = {}
+    for a in sorted(analyzed, key=lambda a: a.mail.date, reverse=True):
+        by_key.setdefault(thread_key(a), []).append(a)
+    out = []
+    for group in by_key.values():
+        newest = group[0]
+        if newest.deadline is None:
+            dated = next((g for g in group if g.deadline), None)
+            if dated:
+                newest.deadline, newest.deadline_has_time = dated.deadline, dated.deadline_has_time
+        if not newest.links:
+            newest.links = next((g.links for g in group if g.links), [])
+        for g in group[1:]:
+            for k in g.kinds:
+                if k not in newest.kinds:
+                    newest.kinds.append(k)
+        newest.is_new = any(g.is_new for g in group)
+        newest.thread_count = len(group)
+        out.append(newest)
+    return out
+
+
 def build_report(analyzed: list[AnalyzedMail], now: datetime, config: dict) -> Report:
-    analyzed = sorted(analyzed, key=lambda a: a.mail.date, reverse=True)
+    analyzed = sorted(dedupe_threads(analyzed), key=lambda a: a.mail.date, reverse=True)
 
     todos = [t for a in analyzed if (t := _todo_from(a, now))]
     order = {"urgent": 0, "soon": 1, "later": 2, "none": 3}
@@ -196,4 +232,5 @@ def build_report(analyzed: list[AnalyzedMail], now: datetime, config: dict) -> R
         new_academic=sum(1 for a in new if a.category == "academic"),
         new_club=sum(1 for a in new if a.category == "club"),
         urgent_count=sum(1 for t in todos if t.urgency == "urgent"),
+        mails=analyzed,
     )

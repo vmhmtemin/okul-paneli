@@ -147,6 +147,88 @@ BULK = [
 ]
 
 
+def _calendar_invite():
+    m = EmailMessage()
+    m.set_content("Dr. Ayşe Yılmaz sizi bir toplantıya davet etti.\nCOMP 132 proje görüşmesi için takvim davetini kabul edin.")
+    ics = ("BEGIN:VCALENDAR\r\nVERSION:2.0\r\nMETHOD:REQUEST\r\nBEGIN:VEVENT\r\n"
+           "DTSTART;TZID=Europe/Istanbul:20261028T153000\r\nDTEND;TZID=Europe/Istanbul:20261028T160000\r\n"
+           "SUMMARY:COMP 132 proje görüşmesi\r\nLOCATION:Ofis B-312\\, Mühendislik\r\n"
+           "END:VEVENT\r\nEND:VCALENDAR\r\n")
+    m.add_attachment(ics.encode(), maintype="text", subtype="calendar", filename="invite.ics")
+    return m
+
+
+def _forwarded():
+    inner = EmailMessage()
+    inner["From"] = "Dr. Ali Demir <ali.demir@istinye.edu.tr>"
+    inner["Subject"] = "PHYS102 Ödev 3"
+    inner["Date"] = format_datetime(datetime(2026, 10, 22, 10, 0, tzinfo=TZ))
+    inner.set_content("PHYS102 Ödev 3 son teslim tarihi 2 Kasım 2026 saat 23:59'dur. Moodle'a yükleyiniz.")
+    m = EmailMessage()
+    m.set_content("Bilginize.")
+    m.add_attachment(inner)                    # message/rfc822 olarak iletilmiş mail
+    return m
+
+
+def _win1254_qp():
+    m = EmailMessage()
+    m.set_content("Değerli öğrenciler,\nMATH101 vize notları açıklandı. İtiraz için son gün 27 Ekim Salı saat 17:00.\n",
+                  charset="windows-1254", cte="quoted-printable")
+    return m
+
+
+def _hidden_preheader_html():
+    html = ("<html><head><style>p{margin:0}</style></head><body>"
+            "<div style='display:none;max-height:0;overflow:hidden'>Bu metin önizleme için gizli 30 Aralık</div>"
+            "<table><tr><td><h2>GDG Haftalık Bülten</h2></td></tr>"
+            "<tr><td>Workshop</td><td>Flutter'a Giriş</td></tr>"
+            "<tr><td>Tarih</td><td>29 Ekim 2026, 18:00</td></tr></table>"
+            "<p>Kayıt: <a href='https://forms.gle/AbcDef'>form</a></p></body></html>")
+    m = EmailMessage()
+    m.set_content(html, subtype="html", cte="base64")
+    return m
+
+
+def _attachment_only():
+    m = EmailMessage()
+    m.add_attachment(b"%PDF-1.4 sahte", maintype="application", subtype="pdf", filename="COE203_odev2.pdf")
+    return m
+
+
+def _outlook_html():
+    url = ("https://eur01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fteams.microsoft.com%2Fl%2Fmeetup-join%2F19abc"
+           "&data=05%7C01")
+    m = EmailMessage()
+    m.set_content(f"<p>Sevgili öğrenciler,</p><p>Yarın 10:00'daki COE203 dersi online yapılacaktır.</p>"
+                  f"<p><a href='{url}'>Toplantıya katıl</a></p>", subtype="html")
+    return m
+
+
+TYPED = [
+    ("13_takvim_daveti", '"Dr. Ayşe Yılmaz" <ayse.yilmaz@istinye.edu.tr>', "Davet: COMP 132 proje görüşmesi",
+     datetime(2026, 10, 23, 13, 0, tzinfo=TZ), _calendar_invite),
+    ("14_iletilen_mail", '"Can" <can.ornek@istinye.edu.tr>', "Fwd: PHYS102 Ödev 3",
+     datetime(2026, 10, 23, 12, 30, tzinfo=TZ), _forwarded),
+    ("15_win1254_qp", '"MATH101 Asistan" <math.asistan@istinye.edu.tr>', "Vize notları",
+     datetime(2026, 10, 23, 15, 0, tzinfo=TZ), _win1254_qp),
+    ("16_gizli_onizleme_bulten", '"GDG" <gdg.ornek@gmail.com>', "GDG haftalık bülten",
+     datetime(2026, 10, 23, 16, 0, tzinfo=TZ), _hidden_preheader_html),
+    ("17_sadece_ek", '"Dr. Ayşe Yılmaz" <ayse.yilmaz@istinye.edu.tr>', "COE203 Ödev 2",
+     datetime(2026, 10, 23, 17, 30, tzinfo=TZ), _attachment_only),
+    ("18_tekrar_yanit", '"Dr. Ayşe Yılmaz" <ayse.yilmaz@istinye.edu.tr>', "RE: COE203 - Proje 1 Teslim Tarihi",
+     datetime(2026, 10, 23, 18, 30, tzinfo=TZ),
+     lambda: _plain("Hatırlatma: Proje 1 teslimi 30 Ekim 2026 saat 23:59. Soru olursa yazın.")),
+    ("19_outlook_teams", '"Dr. Ali Demir" <ali.demir@istinye.edu.tr>', "COE203 online ders",
+     datetime(2026, 10, 23, 19, 0, tzinfo=TZ), _outlook_html),
+]
+
+
+def _plain(text):
+    m = EmailMessage()
+    m.set_content(text)
+    return m
+
+
 def main():
     OUT.mkdir(parents=True, exist_ok=True)
     for old in OUT.glob("*.eml"):
@@ -167,7 +249,14 @@ def main():
         else:
             msg.set_content(s["text"])
         (OUT / f"{s['name']}.eml").write_bytes(bytes(msg))
-    print(f"{len(SAMPLES) + len(BULK)} örnek mail üretildi → {OUT}")
+    for name, frm, subject, date, build in TYPED:
+        msg = build()
+        msg["From"] = frm
+        msg["To"] = "ogrenci@example.com"
+        msg["Subject"] = subject
+        msg["Date"] = format_datetime(date)
+        (OUT / f"{name}.eml").write_bytes(bytes(msg))
+    print(f"{len(SAMPLES) + len(BULK) + len(TYPED)} örnek mail üretildi → {OUT}")
 
 
 def _html_only(_msg, s):

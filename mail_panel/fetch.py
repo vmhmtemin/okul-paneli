@@ -15,7 +15,7 @@ from email.utils import parseaddr, parsedate_to_datetime
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
-from .models import Mail
+from .models import CalendarEvent, Mail
 from .textutil import html_to_text
 
 IMAP_HOST = "imap.gmail.com"
@@ -58,6 +58,74 @@ def _extract_body(msg) -> str:
     return ""
 
 
+def _parse_ics(text: str, tz: ZoneInfo) -> CalendarEvent | None:
+    """Takvim davetinden (VEVENT) başlangıç, başlık ve yeri oku."""
+    text = re.sub(r"\r?\n[ \t]", "", text)              # katlanmış satırları birleştir
+    m = re.search(r"BEGIN:VEVENT(.*?)END:VEVENT", text, re.S)
+    if not m:
+        return None
+    fields: dict[str, tuple[str, str]] = {}
+    for line in m.group(1).splitlines():
+        if ":" not in line:
+            continue
+        key, value = line.split(":", 1)
+        name, _, params = key.partition(";")
+        fields.setdefault(name.upper(), (params, value.strip()))
+    if "DTSTART" not in fields:
+        return None
+    params, value = fields["DTSTART"]
+    try:
+        if "VALUE=DATE" in params.upper() or len(value) == 8:          # tüm gün
+            start = datetime.strptime(value[:8], "%Y%m%d").replace(tzinfo=tz)
+            has_time = False
+        else:
+            naive = datetime.strptime(value.rstrip("Z")[:15], "%Y%m%dT%H%M%S")
+            if value.endswith("Z"):
+                start = naive.replace(tzinfo=ZoneInfo("UTC")).astimezone(tz)
+            else:
+                tzid = re.search(r"TZID=([^;:]+)", params)
+                try:
+                    zone = ZoneInfo(tzid.group(1).strip('"')) if tzid else tz
+                except Exception:
+                    zone = tz
+                start = naive.replace(tzinfo=zone).astimezone(tz)
+            has_time = True
+    except ValueError:
+        return None
+
+    def unescape(v: str) -> str:
+        return v.replace("\\n", " ").replace("\\,", ",").replace("\\;", ";").replace("\\\\", "\\").strip()
+
+    return CalendarEvent(start=start, has_time=has_time,
+                         summary=unescape(fields.get("SUMMARY", ("", ""))[1]),
+                         location=unescape(fields.get("LOCATION", ("", ""))[1]))
+
+
+def _find_event(msg, tz: ZoneInfo) -> CalendarEvent | None:
+    for part in msg.walk():
+        name = (part.get_filename() or "").lower()
+        if part.get_content_type() == "text/calendar" or name.endswith(".ics"):
+            try:
+                raw = part.get_payload(decode=True) or b""
+                ev = _parse_ics(raw.decode(part.get_content_charset() or "utf-8", errors="replace"), tz)
+            except Exception:
+                ev = None
+            if ev:
+                return ev
+    return None
+
+
+def _attachment_names(msg) -> list[str]:
+    names = []
+    for part in msg.walk():
+        if part.is_multipart():
+            continue
+        fn = part.get_filename()
+        if fn and (part.get_content_disposition() == "attachment" or not part.get_content_type().startswith("text/")):
+            names.append(" ".join(str(fn).split())[:80])
+    return names[:10]
+
+
 def _is_bulk(msg, own_address: str | None) -> bool:
     """Toplu/duyuru maili mi? (posta listesi başlıkları veya kişiye özel gönderilmemiş)"""
     if msg.get("List-Id") or msg.get("List-Unsubscribe"):
@@ -85,9 +153,17 @@ def _message_to_mail(uid: str, raw: bytes, tz: ZoneInfo, own_address: str | None
     except (TypeError, ValueError):
         return None
 
+    body = _extract_body(msg)
+    event = _find_event(msg, tz)
+    attachments = _attachment_names(msg)
+    if not body and event:                               # sadece davetten oluşan mail
+        body = f"Etkinlik: {event.summary}\nYer: {event.location}".strip()
+    if not body and attachments:
+        body = "(Mail metni yok, sadece ek gönderilmiş.)"
+
     return Mail(uid=uid, sender_name=name or addr, sender_email=addr.lower(),
-                subject=subject, date=date, body=_extract_body(msg),
-                is_bulk=_is_bulk(msg, own_address))
+                subject=subject, date=date, body=body,
+                is_bulk=_is_bulk(msg, own_address), attachments=attachments, event=event)
 
 
 def _parse_fetch_response(data) -> list[tuple[str, bytes]]:

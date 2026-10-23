@@ -1,0 +1,27 @@
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="===============7448746330304926874=="
+From: =?utf-8?q?Dr=2E_Ay=C5=9Fe_Y=C4=B1lmaz?= <ayse.yilmaz@istinye.edu.tr>
+To: ogrenci@example.com
+Subject: Davet: COMP 132 proje =?utf-8?b?Z8O2csO8xZ9tZXNp?=
+Date: Fri, 23 Oct 2026 13:00:00 +0300
+
+--===============7448746330304926874==
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+
+Dr. Ayşe Yılmaz sizi bir toplantıya davet etti.
+COMP 132 proje görüşmesi için takvim davetini kabul edin.
+
+--===============7448746330304926874==
+Content-Type: text/calendar
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename="invite.ics"
+MIME-Version: 1.0
+
+QkVHSU46VkNBTEVOREFSDQpWRVJTSU9OOjIuMA0KTUVUSE9EOlJFUVVFU1QNCkJFR0lOOlZFVkVO
+VA0KRFRTVEFSVDtUWklEPUV1cm9wZS9Jc3RhbmJ1bDoyMDI2MTAyOFQxNTMwMDANCkRURU5EO1Ra
+SUQ9RXVyb3BlL0lzdGFuYnVsOjIwMjYxMDI4VDE2MDAwMA0KU1VNTUFSWTpDT01QIDEzMiBwcm9q
+ZSBnw7Zyw7zFn21lc2kNCkxPQ0FUSU9OOk9maXMgQi0zMTJcLCBNw7xoZW5kaXNsaWsNCkVORDpW
+RVZFTlQNCkVORDpWQ0FMRU5EQVINCg==
+
+--===============7448746330304926874==--

@@ -1,0 +1,15 @@
+Content-Type: multipart/mixed; boundary="===============6794650091124913879=="
+From: =?utf-8?q?Dr=2E_Ay=C5=9Fe_Y=C4=B1lmaz?= <ayse.yilmaz@istinye.edu.tr>
+To: ogrenci@example.com
+Subject: COE203 =?utf-8?q?=C3=96dev?= 2
+Date: Fri, 23 Oct 2026 17:30:00 +0300
+
+--===============6794650091124913879==
+Content-Type: application/pdf
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename="COE203_odev2.pdf"
+MIME-Version: 1.0
+
+JVBERi0xLjQgc2FodGU=
+
+--===============6794650091124913879==--

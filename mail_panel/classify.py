@@ -155,6 +155,10 @@ class Classifier:
 
         # 3) Tarih, linkler, özet
         deadline, has_time = pick_deadline(mail.subject + "\n" + body, mail.date)
+        if mail.event and mail.event.start >= mail.date.replace(hour=0, minute=0, second=0, microsecond=0):
+            # Takvim daveti varsa en güvenilir tarih odur
+            deadline, has_time = mail.event.start, mail.event.has_time
+            kinds = ["meeting"] + [k for k in kinds if k not in ("meeting", "assignment")]
         links = extract_links(body)
         if not any(l.label in ("Zoom", "Google Meet", "Teams") for l in links):
             # Toplantı linki bazen imzanın altında kalır; tüm metne de bak

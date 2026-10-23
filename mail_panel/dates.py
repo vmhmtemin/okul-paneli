@@ -54,7 +54,7 @@ RX_EN_WEEKDAY = re.compile(rf"\b(?:(next|this)\s+)?({_alt(EN_WEEKDAYS)})\b")
 RX_RELATIVE = re.compile(
     rf"(?<![{_TR_LETTERS}])(bugün|bu akşam|bu gece|bu öğlen|yarın|öbür gün|today|tonight|tomorrow)(?![{_TR_LETTERS}])"
 )
-RX_TIME = re.compile(r"(?<![\d.:/])([01]?\d|2[0-3])[:.]([0-5]\d)(?![\d.:/])")
+RX_TIME = re.compile(r"(?<![\d.:/])([01]?\d|2[0-3])[:.]([0-5]\d)(?![\d:/])(?!\.\d)")
 RX_SAAT_HOUR = re.compile(r"saat\s*([01]?\d|2[0-3])(?![\d:.])")
 
 # Erteleme bildiren cümlelerde en GEÇ tarih yeni tarihtir

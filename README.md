@@ -66,13 +66,22 @@ https://KULLANICI-ADIN.github.io/okul-paneli/
 
 ---
 
+## Panelde neler var?
+
+- **Not kağıdı** (en üstte): istediğini yaz, otomatik kaydedilir ve tüm cihazlarda aynı görünür.
+- **Filtreler**: Tümü / Dersler / Kulüpler / Görevlerim. **Kategoriler** düğmesiyle istediğin dersi veya kulübü tamamen gizleyebilirsin.
+- **Katlanır bölümler**: Özet, Yapılacaklar, Takvim ve Mailler başlıklarına dokununca küçülür; tercih hatırlanır.
+- **Mailler**: derse/kulübe göre gruplu; bir maile dokununca **tamamı** açılır (linkler, ekler, takvim davetinin yeri, "Gmail'de aç").
+- **Desteklenen mail türleri**: düz metin, HTML bülten (gizli önizleme metni atılır, tablolar okunur), takvim daveti (.ics — tarih/saat/yer doğrudan alınır), iletilen mail (ek olarak iletilen dahil), sadece ek içeren mail, Türkçe eski kodlamalar (windows-1254, ISO-8859-9), Outlook/Google yönlendirme linkleri. Aynı konudaki "RE:/YNT:" zincirleri tek kayıtta toplanır.
+- **Yenileme koruması**: sayfayı aşağı çekince yenilenmez; sen yazarken ya da bir pencere açıkken arka plandaki senkron ekranı değiştirmez.
+
 ## Görev ekleme, takvim ve cihazlar arası senkron (isteğe bağlı)
 
 Panelde **＋ Görev ekle** ile kendi görevlerini (başlık, tarih, saat, not) ekleyebilir; **Takvim**'de mail teslimleri ve kendi görevlerin günlerin üstünde renkli noktalarla görünür. Bir güne dokununca o günün listesi açılır.
 
 Görevlerin telefon ve bilgisayarda **aynı** görünmesi için ücretsiz bir Supabase veritabanı kullanılır:
 
-1. Supabase'de bir proje aç, **SQL Editor**'e `supabase/schema.sql` dosyasının içeriğini yapıştırıp **Run** de.
+1. Supabase'de bir proje aç, **SQL Editor**'de önce `supabase/schema.sql`, sonra `supabase/002_note.sql` dosyasını çalıştır.
 2. GitHub'a 3 Secret daha ekle:
 
 | Ad | Değer |

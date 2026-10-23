@@ -114,6 +114,49 @@ def test_fetch_parser_handles_any_part_order():
     assert uid == "5" and m.subject.startswith("COE203") and "30 Ekim 2026" in m.body
 
 
+# ------------------------------------------------- farklı mail türleri
+def test_calendar_invite_sets_exact_time_and_meeting():
+    a = _analyze_samples()["13_takvim_daveti"]
+    assert a.deadline == d(2026, 10, 28, 15, 30) and a.deadline_has_time
+    assert a.kinds[0] == "meeting"
+    assert a.mail.event.location == "Ofis B-312, Mühendislik"
+
+
+def test_forwarded_mail_body_is_read():
+    a = _analyze_samples()["14_iletilen_mail"]
+    assert a.group == "PHYS102" and a.deadline == d(2026, 11, 2)
+
+
+def test_windows1254_quoted_printable_and_time_before_period():
+    a = _analyze_samples()["15_win1254_qp"]
+    assert "Değerli öğrenciler" in a.mail.body
+    assert a.deadline == d(2026, 10, 27, 17, 0) and a.deadline_has_time
+
+
+def test_hidden_preheader_is_ignored_and_table_kept():
+    a = _analyze_samples()["16_gizli_onizleme_bulten"]
+    assert "gizli" not in a.mail.body and "30 Aralık" not in a.mail.body
+    assert "Workshop · Flutter'a Giriş" in a.mail.body
+    assert a.deadline == d(2026, 10, 29, 18, 0)
+
+
+def test_attachment_only_mail():
+    a = _analyze_samples()["17_sadece_ek"]
+    assert a.mail.attachments == ["COE203_odev2.pdf"] and "sadece ek" in a.mail.body
+
+
+def test_outlook_safelinks_unwrapped():
+    a = _analyze_samples()["19_outlook_teams"]
+    assert a.links[0].label == "Teams" and a.links[0].url.startswith("https://teams.microsoft.com/")
+
+
+def test_reply_thread_deduplicated():
+    analyzed = [a for a in _analyze_samples().values() if a]
+    rep = build_report(analyzed, NOW, CFG)
+    proje = [t for t in rep.todos if "Proje 1 Teslim" in t.title]
+    assert len(proje) == 1 and proje[0].title.startswith("RE:")
+
+
 def test_report_hides_past_and_sorts():
     analyzed = [a for a in _analyze_samples().values() if a]
     rep = build_report(analyzed, NOW, CFG)
