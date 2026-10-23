@@ -1,0 +1,8 @@
+site/
+site_enc/
+public/
+tests/screens/
+__pycache__/
+*.pyc
+.env
+.staticrypt.json

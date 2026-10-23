@@ -1,0 +1,54 @@
+# =============================================================
+#  Mail Paneli — Ayarlar
+#  Bu dosyayı kendi okuluna / kulüplerine göre düzenle.
+#  Harf büyüklüğü önemsizdir; Türkçe karakterler desteklenir.
+# =============================================================
+
+# Panelin başlığı ve saat dilimi
+panel_title: "Günlük Okul Paneli"
+timezone: "Europe/Istanbul"
+
+# Kaç günlük mail taranacak? (Yapılacaklar listesi bu süre içindeki
+# maillerden oluşur; teslim tarihi geçmiş görevler otomatik gizlenir.)
+lookback_days: 14
+
+# "Yeni" sayılacak mailler: son kaç saat? (Günde 2 tarama için 12 + pay)
+new_window_hours: 13
+
+# -------------------------------------------------------------
+# AKADEMİK: Bu adreslerden / alan adlarından gelen mailler
+# "Ders / Akademik" kategorisine girer.
+# -------------------------------------------------------------
+academic:
+  sender_domains:
+    - "ku.edu.tr"
+  sender_addresses: []          # örn. "hoca.adi@gmail.com"
+  # Konu veya metinde geçerse akademik sayılır
+  keywords: ["ödev", "odev", "quiz", "vize", "final", "sınav", "sinav",
+             "midterm", "assignment", "homework", "lab", "ders", "proje teslim"]
+  # Ders kodu kalıbı (örn. COE203, MATH 101). Bulunursa kart başlığı olur.
+  course_code_regex: "\\b([A-ZÇĞİÖŞÜ]{2,5})\\s?(\\d{3})\\b"
+
+# -------------------------------------------------------------
+# KULÜPLER: Her kulüp için ad + onu tanıtan kelimeler / adresler
+# -------------------------------------------------------------
+clubs:
+  # ÖRNEK — kendi kulüplerinle değiştir
+  - name: "Örnek Kulüp"
+    keywords: ["örnek kulüp", "ornek kulup"]
+    sender_addresses: []
+  - name: "SKS / Öğrenci Kulüpleri Birimi"
+    keywords: ["sks", "sağlık kültür spor", "saglik kultur spor", "student clubs"]
+    sender_addresses: []
+
+# Kulüp maili olduğunu gösteren genel kelimeler (kulüp adı bulunamazsa
+# "Diğer Kulüp İşleri" başlığına düşer)
+club_generic_keywords: ["kulüp", "kulup", "etkinlik", "sponsor", "topluluk"]
+
+# -------------------------------------------------------------
+# YOK SAYILACAKLAR
+# -------------------------------------------------------------
+ignore:
+  sender_contains: ["noreply@github.com", "no-reply@accounts.google.com",
+                    "newsletter", "kampanya", "promo"]
+  subject_contains: ["abonelik", "unsubscribe", "indirim", "kampanya"]

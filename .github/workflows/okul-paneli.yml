@@ -1,0 +1,123 @@
+# Günde 2 kez (08:00 ve 20:00, İstanbul) Gmail'i tarar, şifreli paneli
+# GitHub Pages'e yayınlar ve kısa bir özet e-postası gönderir.
+name: Okul Paneli
+
+on:
+  schedule:
+    # GitHub saatleri UTC'dir. İstanbul = UTC+3 (yaz/kış saati yok)
+    - cron: "0 5 * * *"     # 08:00 İstanbul
+    - cron: "0 17 * * *"    # 20:00 İstanbul
+  workflow_dispatch:         # "Run workflow" butonuyla elle çalıştırma
+
+permissions:
+  contents: write            # sadece uzun süre işlem olmazsa "canlı tut" commit'i için
+  pages: write
+  id-token: write
+
+concurrency:
+  group: okul-paneli
+  cancel-in-progress: false
+
+jobs:
+  panel:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Python paketlerini kur
+        run: pip install -r requirements.txt
+
+      - name: Gerekli Secrets var mı kontrol et
+        id: check
+        env:
+          GMAIL_USER: ${{ secrets.GMAIL_USER }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          PANEL_PASSWORD: ${{ secrets.PANEL_PASSWORD }}
+          STATICRYPT_SALT: ${{ secrets.STATICRYPT_SALT }}
+        run: |
+          missing=""
+          for v in GMAIL_USER GMAIL_APP_PASSWORD PANEL_PASSWORD STATICRYPT_SALT; do
+            [ -z "${!v}" ] && missing="$missing $v"
+          done
+          if [ -n "$missing" ]; then
+            # Kurulum bitmeden her gün hata maili gelmesin: uyarı verip atla
+            echo "::warning::Kurulum tamamlanmamış, eksik Secret(lar):$missing — README'deki 3. adıma bak. Bu çalıştırma atlandı."
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if ! [[ "$STATICRYPT_SALT" =~ ^[0-9a-f]{32}$ ]]; then
+            echo "::error::STATICRYPT_SALT 32 karakterlik küçük harf hex olmalı."
+            exit 1
+          fi
+          echo "ready=true" >> "$GITHUB_OUTPUT"
+
+      - name: Mailleri tara, paneli üret, özet e-postası gönder
+        if: steps.check.outputs.ready == 'true'
+        env:
+          GMAIL_USER: ${{ secrets.GMAIL_USER }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          NOTIFY_TO: ${{ secrets.NOTIFY_TO }}
+        run: |
+          owner="${{ github.repository_owner }}"
+          export PANEL_URL="https://${owner,,}.github.io/${{ github.event.repository.name }}/"
+          python main.py --send
+
+      - uses: actions/setup-node@v4
+        if: steps.check.outputs.ready == 'true'
+        with:
+          node-version: "20"
+
+      - name: Paneli şifrele (şifresiz sayfa asla yayınlanmaz)
+        if: steps.check.outputs.ready == 'true'
+        env:
+          STATICRYPT_PASSWORD: ${{ secrets.PANEL_PASSWORD }}
+          STATICRYPT_SALT: ${{ secrets.STATICRYPT_SALT }}
+        run: |
+          npx --yes staticrypt@3.5.4 site/index.html -d public --short -c false \
+            --salt "$STATICRYPT_SALT" --remember 30 \
+            --template-title "Okul Paneli" \
+            --template-instructions "Panel şifreli. 'Bu cihazda hatırla'yı işaretlersen 30 gün tekrar sormaz." \
+            --template-placeholder "Şifre" --template-button "AÇ" \
+            --template-remember "Bu cihazda hatırla" --template-error "Şifre yanlış" \
+            --template-color-primary "#2f5bd3" --template-color-secondary "#f6f5f1"
+          # Güvenlik kontrolü: şifreli dosyada panel metni düz halde OLMAMALI
+          if grep -q "Günlük Özet" public/index.html; then
+            echo "::error::Şifreleme başarısız görünüyor, yayın durduruldu."; exit 1
+          fi
+          touch public/.nojekyll
+
+      - uses: actions/configure-pages@v5
+        if: steps.check.outputs.ready == 'true'
+
+      - uses: actions/upload-pages-artifact@v3
+        if: steps.check.outputs.ready == 'true'
+        with:
+          path: public
+
+      - name: GitHub Pages'e yayınla
+        if: steps.check.outputs.ready == 'true'
+        id: deploy
+        uses: actions/deploy-pages@v4
+
+      # GitHub, 60 gün hiç commit olmayan depolarda zamanlanmış görevleri
+      # durdurur. 50 günü geçince boş bir commit atarak bunu engelliyoruz.
+      - name: Depoyu canlı tut
+        if: steps.check.outputs.ready == 'true'
+        run: |
+          last=$(git log -1 --format=%ct)
+          if [ $(( $(date +%s) - last )) -gt $(( 50 * 86400 )) ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git commit --allow-empty -m "canlı tut: zamanlanmış görev aktif kalsın"
+            git push
+          fi

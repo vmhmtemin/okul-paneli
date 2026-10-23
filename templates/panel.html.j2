@@ -1,0 +1,315 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#f6f5f1" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#16171a" media="(prefers-color-scheme: dark)">
+<title>{{ r.title }}</title>
+<style>
+  :root {
+    --bg: #f6f5f1; --surface: #ffffff; --surface-2: #f0efe9; --line: #e3e1d9;
+    --text: #1d1d1f; --muted: #6b6a66; --accent: #2f5bd3;
+    --urgent: #c2410c; --urgent-bg: #fff1e8;
+    --k-exam: #b42318; --k-exam-bg: #fdecea;
+    --k-assignment: #2f5bd3; --k-assignment-bg: #eaf0fd;
+    --k-meeting: #187a4a; --k-meeting-bg: #e6f5ec;
+    --k-followup: #946200; --k-followup-bg: #fdf3dc;
+    --k-reminder: #55534e; --k-reminder-bg: #efeee9;
+    --new: #2f5bd3;
+    --radius: 14px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #16171a; --surface: #1f2024; --surface-2: #26282d; --line: #33353b;
+      --text: #ececee; --muted: #a0a0a8; --accent: #8aa8ff;
+      --urgent: #ff9a62; --urgent-bg: #3a2418;
+      --k-exam: #ff8b80; --k-exam-bg: #3b1f1d;
+      --k-assignment: #8aa8ff; --k-assignment-bg: #1f2742;
+      --k-meeting: #6fd39d; --k-meeting-bg: #183026;
+      --k-followup: #f2c35b; --k-followup-bg: #352a12;
+      --k-reminder: #c4c3be; --k-reminder-bg: #2c2d31;
+      --new: #8aa8ff;
+    }
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font: 16px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    overflow-wrap: anywhere;
+  }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 0 16px calc(32px + env(safe-area-inset-bottom)); }
+
+  /* ---------- Başlık ---------- */
+  header {
+    position: sticky; top: 0; z-index: 5;
+    background: color-mix(in srgb, var(--bg) 92%, transparent);
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--line);
+    padding: calc(12px + env(safe-area-inset-top)) 0 12px;
+  }
+  header .wrap { padding-bottom: 0; display: flex; align-items: center; gap: 12px; justify-content: space-between; }
+  h1 { font-size: 1.15rem; line-height: 1.25; margin: 0; letter-spacing: -0.01em; }
+  .updated { color: var(--muted); font-size: .8rem; margin-top: 2px; }
+  .stats { display: flex; gap: 6px; flex-shrink: 0; }
+  .stat {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    min-width: 52px; min-height: 44px; padding: 4px 8px; border-radius: 10px;
+    background: var(--surface); border: 1px solid var(--line);
+  }
+  .stat b { font-size: 1.05rem; line-height: 1.1; font-variant-numeric: tabular-nums; }
+  .stat span { font-size: .68rem; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+  .stat.urgent b { color: var(--urgent); }
+
+  /* ---------- Bölümler ---------- */
+  section { margin-top: 24px; }
+  h2 {
+    font-size: .8rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted);
+    margin: 0 0 10px; display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  }
+  .panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+  .summary { padding: 14px 16px; }
+  .summary ul { margin: 0; padding-left: 1.1em; }
+  .summary li + li { margin-top: 6px; }
+
+  /* ---------- Yapılacaklar ---------- */
+  .bucket { font-size: .78rem; font-weight: 600; color: var(--muted); padding: 12px 16px 4px; }
+  .bucket.urgent { color: var(--urgent); }
+  .todo { display: flex; align-items: stretch; border-top: 1px solid var(--line); }
+  .bucket + .todo { border-top: 0; }
+  .todo label {
+    flex: 1; min-width: 0; display: flex; gap: 12px; align-items: flex-start;
+    padding: 12px 8px 12px 12px; min-height: 56px; cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .check {
+    /* Görünen kutu 26px, dokunma alanı label'ın tamamı (≥44px) */
+    appearance: none; -webkit-appearance: none; flex-shrink: 0;
+    width: 26px; height: 26px; margin: 2px 0 0; border-radius: 8px;
+    border: 2px solid var(--line); background: var(--surface); display: grid; place-content: center;
+    transition: background .15s, border-color .15s;
+  }
+  .check::after { content: ""; width: 12px; height: 7px; border: solid #fff; border-width: 0 0 2.5px 2.5px;
+    transform: rotate(-45deg) translate(1px, -1px); opacity: 0; }
+  .check:checked { background: var(--accent); border-color: var(--accent); }
+  .check:checked::after { opacity: 1; }
+  .check:focus-visible { outline: 3px solid color-mix(in srgb, var(--accent) 40%, transparent); outline-offset: 2px; }
+  .todo-body { display: block; min-width: 0; flex: 1; }
+  .todo-title { display: block; font-weight: 600; line-height: 1.35; }
+  .todo-meta { display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: center; margin-top: 4px; font-size: .85rem; color: var(--muted); }
+  .when { color: var(--text); font-weight: 500; }
+  .todo.urgent .when { color: var(--urgent); }
+  .todo.done .todo-title { text-decoration: line-through; color: var(--muted); font-weight: 500; }
+  .todo.done .when { color: var(--muted); }
+  .todo.done { opacity: .7; }
+  .hide-done .todo.done { display: none; }
+
+  .tag {
+    display: inline-block; font-size: .72rem; font-weight: 600; padding: 2px 8px; border-radius: 999px;
+    line-height: 1.5; white-space: nowrap;
+  }
+  .tag.exam { color: var(--k-exam); background: var(--k-exam-bg); }
+  .tag.assignment { color: var(--k-assignment); background: var(--k-assignment-bg); }
+  .tag.meeting { color: var(--k-meeting); background: var(--k-meeting-bg); }
+  .tag.followup { color: var(--k-followup); background: var(--k-followup-bg); }
+  .tag.reminder, .tag.cancel { color: var(--k-reminder); background: var(--k-reminder-bg); }
+  .tag.rel { color: var(--urgent); background: var(--urgent-bg); }
+  .tag.new { color: #fff; background: var(--new); }
+
+  .icon-btn {
+    flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+    min-width: 48px; min-height: 48px; margin: 4px 4px 4px 0; border-radius: 10px;
+    color: var(--accent); text-decoration: none; font-size: .8rem; font-weight: 600;
+  }
+  .icon-btn:active { background: var(--surface-2); }
+  .empty { padding: 16px; color: var(--muted); }
+
+  .toggle {
+    min-height: 44px; padding: 0 14px; border-radius: 10px; border: 1px solid var(--line);
+    background: var(--surface); color: var(--text); font: inherit; font-size: .8rem;
+    text-transform: none; letter-spacing: 0; cursor: pointer;
+  }
+
+  /* ---------- Detay kartları ---------- */
+  .cards { display: grid; gap: 12px; }
+  .card { overflow: hidden; }
+  .card-head { display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    padding: 12px 16px; background: var(--surface-2); border-bottom: 1px solid var(--line); }
+  .card-head h3 { font-size: 1rem; margin: 0; }
+  .mail { padding: 14px 16px; }
+  .mail + .mail { border-top: 1px solid var(--line); }
+  .mail-top { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .mail-subject { font-weight: 600; margin: 6px 0 2px; line-height: 1.35; }
+  .mail-from { font-size: .85rem; color: var(--muted); }
+  .mail-snippet { margin: 8px 0 0; font-size: .95rem; }
+  .deadline { margin-top: 8px; font-size: .9rem; }
+  .deadline b { font-weight: 600; }
+  .links { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 16px;
+    border-radius: 10px; background: var(--accent); color: #fff; text-decoration: none; font-weight: 600; font-size: .9rem;
+  }
+  .btn.secondary { background: var(--surface-2); color: var(--text); border: 1px solid var(--line); }
+  @media (prefers-color-scheme: dark) { .btn { color: #0f1220; } .btn.secondary { color: var(--text); } }
+
+  footer { margin-top: 28px; text-align: center; color: var(--muted); font-size: .78rem; }
+
+  @media (min-width: 640px) {
+    h1 { font-size: 1.35rem; }
+    .cards.two { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div style="min-width:0">
+      <h1>{{ r.title }}</h1>
+      <div class="updated">{{ r.generated_text }}</div>
+    </div>
+    <div class="stats" aria-label="Özet sayılar">
+      <div class="stat"><b>{{ r.new_count }}</b><span>Yeni</span></div>
+      <div class="stat {{ 'urgent' if r.urgent_count }}"><b>{{ r.urgent_count }}</b><span>48 saat</span></div>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <section aria-labelledby="h-ozet">
+    <h2 id="h-ozet">Günlük Özet</h2>
+    <div class="panel summary">
+      <ul>{% for line in r.summary %}<li>{{ line }}</li>{% endfor %}</ul>
+    </div>
+  </section>
+
+  <section aria-labelledby="h-todo" id="todo-section">
+    <h2 id="h-todo">
+      <span>Yapılacaklar ({{ r.todos|length }})</span>
+      {% if r.todos %}<button class="toggle" id="toggle-done" type="button" aria-pressed="false">Bitenleri gizle</button>{% endif %}
+    </h2>
+    <div class="panel" id="todo-list">
+      {% if not r.todos %}
+        <div class="empty">Şu an bekleyen bir iş görünmüyor. 🎉</div>
+      {% endif %}
+      {% set buckets = [("urgent", "48 saat içinde"), ("soon", "Bu hafta"), ("later", "Daha sonra"), ("none", "Tarihsiz – yanıt / takip")] %}
+      {% for key, label in buckets %}
+        {% set items = r.todos | selectattr("urgency", "equalto", key) | list %}
+        {% if items %}
+          <div class="bucket {{ key }}">{{ label }}</div>
+          {% for t in items %}
+          <div class="todo {{ t.urgency }}" data-id="{{ t.id }}">
+            <label>
+              <input type="checkbox" class="check" data-id="{{ t.id }}" aria-label="Tamamlandı: {{ t.title }}">
+              <span class="todo-body">
+                <span class="todo-title">{{ t.title }}</span>
+                <span class="todo-meta">
+                  <span class="tag {{ t.kind }}">{{ t.kind_label }}</span>
+                  <span>{{ t.group }}</span>
+                </span>
+                <span class="todo-meta">
+                  <span class="when">{{ t.when_text }}</span>
+                  {% if t.rel_text in ("bugün", "yarın") %}<span class="tag rel">{{ t.rel_text }}</span>
+                  {% elif t.rel_text %}<span>· {{ t.rel_text }}</span>{% endif %}
+                </span>
+              </span>
+            </label>
+            {% if t.link %}
+              <a class="icon-btn" href="{{ t.link.url }}" target="_blank" rel="noopener noreferrer"
+                 aria-label="{{ t.link.label }} bağlantısını aç">Aç ↗</a>
+            {% endif %}
+          </div>
+          {% endfor %}
+        {% endif %}
+      {% endfor %}
+    </div>
+  </section>
+
+  {% for heading, cards, icon in [("Dersler / Akademik", r.academic_cards, "📚"), ("Kulüpler", r.club_cards, "🎪")] %}
+  {% if cards %}
+  <section>
+    <h2>{{ heading }}</h2>
+    <div class="cards">
+      {% for c in cards %}
+      <article class="panel card">
+        <div class="card-head">
+          <h3>{{ icon }} {{ c.group }}</h3>
+          {% if c.new_count %}<span class="tag new">{{ c.new_count }} yeni</span>{% endif %}
+        </div>
+        {% for a in c.mails %}
+        <div class="mail">
+          <div class="mail-top">
+            {% if a.is_new %}<span class="tag new">Yeni</span>{% endif %}
+            {% for k in a.kinds %}<span class="tag {{ k }}">{{ kind_labels[k] }}</span>{% endfor %}
+          </div>
+          <div class="mail-subject">{{ a.mail.subject }}</div>
+          <div class="mail-from">{{ a.mail.sender_name }} · {{ a.mail.date | short_date }}</div>
+          {% if a.snippet %}<p class="mail-snippet">{{ a.snippet }}</p>{% endif %}
+          {% if a.deadline %}
+            <div class="deadline">🗓 <b>{{ a.deadline | long_date(a.deadline_has_time) }}</b></div>
+          {% endif %}
+          {% if a.links %}
+          <div class="links">
+            {% for l in a.links %}
+              <a class="btn {{ '' if loop.first else 'secondary' }}" href="{{ l.url }}" target="_blank" rel="noopener noreferrer">{{ l.label }}</a>
+            {% endfor %}
+          </div>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </article>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+  {% endfor %}
+
+  <footer>Otomatik oluşturuldu · Günde 2 kez güncellenir<br>İşaretlediğin kutular sadece bu cihazda saklanır.</footer>
+</main>
+
+<script>
+(function () {
+  var KEY = "mail-panel-done";
+  var done = {};
+  try { done = JSON.parse(localStorage.getItem(KEY) || "{}") || {}; } catch (e) { done = {}; }
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(done)); } catch (e) {} }
+
+  var boxes = document.querySelectorAll(".check");
+  for (var i = 0; i < boxes.length; i++) {
+    (function (box) {
+      var row = box.closest(".todo");
+      if (done[box.dataset.id]) { box.checked = true; row.classList.add("done"); }
+      box.addEventListener("change", function () {
+        if (box.checked) { done[box.dataset.id] = Date.now(); } else { delete done[box.dataset.id]; }
+        row.classList.toggle("done", box.checked);
+        save();
+      });
+    })(boxes[i]);
+  }
+
+  // 60 günden eski işaretleri temizle (liste sonsuza kadar büyümesin)
+  var cutoff = Date.now() - 60 * 864e5;
+  Object.keys(done).forEach(function (k) { if (done[k] < cutoff) delete done[k]; });
+  save();
+
+  var toggle = document.getElementById("toggle-done");
+  var list = document.getElementById("todo-list");
+  if (toggle) {
+    var hidden = false;
+    try { hidden = localStorage.getItem(KEY + "-hide") === "1"; } catch (e) {}
+    function apply() {
+      list.classList.toggle("hide-done", hidden);
+      toggle.textContent = hidden ? "Bitenleri göster" : "Bitenleri gizle";
+      toggle.setAttribute("aria-pressed", hidden ? "true" : "false");
+    }
+    apply();
+    toggle.addEventListener("click", function () {
+      hidden = !hidden; apply();
+      try { localStorage.setItem(KEY + "-hide", hidden ? "1" : "0"); } catch (e) {}
+    });
+  }
+})();
+</script>
+</body>
+</html>
