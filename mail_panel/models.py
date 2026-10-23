@@ -18,6 +18,7 @@ class Mail:
     subject: str
     date: datetime          # saat dilimi bilgili (aware) datetime
     body: str               # düz metin gövde (imza temizlenmeden önce)
+    is_bulk: bool = False   # posta listesi / toplu duyuru / kişiye özel değil
 
 
 @dataclass

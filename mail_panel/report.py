@@ -96,10 +96,8 @@ def _todo_from(a: AnalyzedMail, now: datetime) -> TodoItem | None:
         has_meeting_link = any(l.label in ("Zoom", "Google Meet", "Teams") for l in a.links)
         if kind == "meeting" and "followup" in a.kinds and not (a.deadline_has_time or has_meeting_link):
             kind = "followup"
-    elif "cancel" in a.kinds:
-        return None                                      # sadece bilgilendirme
     else:
-        kind = "reminder"
+        return None        # türü belirsiz ya da sadece iptal bildirimi: kartta görünür, listeye girmez
 
     if a.deadline is None:
         urgency = "none"

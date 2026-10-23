@@ -129,16 +129,36 @@ SAMPLES = [
 ]
 
 
+BULK = [
+    dict(
+        name="11_toplu_bulten",
+        frm='"KU Announcements" <announcements@ku.edu.tr>',
+        subject="KUDaily [Student]",
+        date=datetime(2026, 10, 23, 9, 0, tzinfo=TZ),
+        text="Bugün kampüste: Bilim Kafe buluşması saat 14.00'te. Yarın proje fuarı var. Etkinliklere herkes davetli.",
+    ),
+    dict(
+        name="12_toplu_ders_duyurusu",
+        frm='"Registrar" <registrar@ku.edu.tr>',
+        subject="Final sınav programı yayınlandı",
+        date=datetime(2026, 10, 23, 11, 0, tzinfo=TZ),
+        text="Final sınav programı öğrenci sistemine yüklenmiştir. Son itiraz tarihi 30.10.2026.",
+    ),
+]
+
+
 def main():
     OUT.mkdir(parents=True, exist_ok=True)
     for old in OUT.glob("*.eml"):
         old.unlink()
-    for s in SAMPLES:
+    for s in SAMPLES + BULK:
         msg = EmailMessage()
         msg["From"] = s["frm"]
         msg["To"] = "ogrenci@example.com"
         msg["Subject"] = s["subject"]
         msg["Date"] = format_datetime(s["date"])
+        if s in BULK:
+            msg["List-Id"] = "<duyuru.ku.edu.tr>"          # posta listesi maili
         if "html" in s:
             msg.set_content("HTML destekli bir istemci kullanın.")
             msg.add_alternative(s["html"], subtype="html")
@@ -147,7 +167,7 @@ def main():
         else:
             msg.set_content(s["text"])
         (OUT / f"{s['name']}.eml").write_bytes(bytes(msg))
-    print(f"{len(SAMPLES)} örnek mail üretildi → {OUT}")
+    print(f"{len(SAMPLES) + len(BULK)} örnek mail üretildi → {OUT}")
 
 
 def _html_only(_msg, s):

@@ -21,6 +21,12 @@ KIND_KEYWORDS: dict[str, list[str]] = {
                    "please reply", "let me know", "rsvp", "katılım durumu"],
 }
 
+# Toplu duyuru maillerinde (KUDaily, seminer duyurusu vb.) sadece KONU satırında
+# bunlardan biri ya da bir ders kodu varsa mail panele alınır.
+BULK_SUBJECT_KEYWORDS = ["ödev", "odev", "quiz", "vize", "final", "sınav", "sinav", "midterm",
+                         "exam", "assignment", "homework", "teslim", "deadline", "ders iptal",
+                         "class cancel", "makeup", "telafi", "not ilan", "grades"]
+
 KIND_LABELS = {
     "assignment": "Ödev / Proje",
     "exam": "Sınav",
@@ -121,6 +127,13 @@ class Classifier:
         club = self._match_club(mail, subject_l)
         if club:
             category, group = "club", club
+        elif mail.is_bulk:
+            # Toplu duyuru: sadece konu satırı ders/sınav/ödevle ilgiliyse al.
+            # (KUDaily, seminer, etkinlik bültenleri vb. elenir.)
+            if self._course_code(mail.subject) or _contains_any(subject_l, BULK_SUBJECT_KEYWORDS):
+                category = "academic"
+            else:
+                return None
         elif self._academic_sender(mail):
             # Akademik adresten gelse bile gövdede kulüp adı geçiyorsa kulüp maili
             club = self._match_club(mail, full_l)

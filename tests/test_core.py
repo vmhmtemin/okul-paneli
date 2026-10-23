@@ -98,6 +98,22 @@ def test_samples_classification():
     assert r["06_foto_stant"].deadline == d(2026, 10, 24, 11, 0)
 
 
+def test_bulk_newsletter_dropped_but_bulk_exam_kept():
+    r = _analyze_samples()
+    assert r["11_toplu_bulten"] is None                       # KUDaily vb. elenir
+    assert r["12_toplu_ders_duyurusu"] is not None            # konu "Final sınav" → kalır
+    assert "exam" in r["12_toplu_ders_duyurusu"].kinds
+
+
+def test_fetch_parser_handles_any_part_order():
+    raw = (SAMPLES / "01_coe203_proje.eml").read_bytes()
+    h, _, b = raw.partition(b"\n\n")
+    resp = [(b"1 (UID 5 BODY[TEXT]<0> {%d}" % len(b), b), (b" BODY[HEADER] {%d}" % len(h), h + b"\n\n"), b")"]
+    (uid, data), = fetch._parse_fetch_response(resp)
+    m = fetch._message_to_mail(uid, data, TZ)
+    assert uid == "5" and m.subject.startswith("COE203") and "30 Ekim 2026" in m.body
+
+
 def test_report_hides_past_and_sorts():
     analyzed = [a for a in _analyze_samples().values() if a]
     rep = build_report(analyzed, NOW, CFG)
