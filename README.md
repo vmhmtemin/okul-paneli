@@ -66,6 +66,25 @@ https://KULLANICI-ADIN.github.io/okul-paneli/
 
 ---
 
+## Görev ekleme, takvim ve cihazlar arası senkron (isteğe bağlı)
+
+Panelde **＋ Görev ekle** ile kendi görevlerini (başlık, tarih, saat, not) ekleyebilir; **Takvim**'de mail teslimleri ve kendi görevlerin günlerin üstünde renkli noktalarla görünür. Bir güne dokununca o günün listesi açılır.
+
+Görevlerin telefon ve bilgisayarda **aynı** görünmesi için ücretsiz bir Supabase veritabanı kullanılır:
+
+1. Supabase'de bir proje aç, **SQL Editor**'e `supabase/schema.sql` dosyasının içeriğini yapıştırıp **Run** de.
+2. GitHub'a 3 Secret daha ekle:
+
+| Ad | Değer |
+|---|---|
+| `SUPABASE_URL` | Proje adresi (örn. `https://xxxx.supabase.co`) |
+| `SUPABASE_KEY` | **Project Settings → API Keys**'teki `sb_publishable_...` anahtarı |
+| `SYNC_KEY` | 64 karakterlik rastgele kod: `python3 -c "import secrets; print(secrets.token_hex(32))"` |
+
+Güvenlik: Veritabanı tablolarına doğrudan erişim kapalıdır; sayfa sadece `SYNC_KEY`'i bilen 4 fonksiyonu çağırabilir. `SYNC_KEY` sadece şifreli panelin içinde durur.
+Bu Secret'lar yoksa görev ekleme yine çalışır, sadece görevler eklendiği cihazda saklanır.
+İnternet yokken eklenen görevler cihazda bekler, bağlantı gelince otomatik gönderilir.
+
 ## Kendi okuluna / kulüplerine göre ayarla: `config.yaml`
 
 - `academic.sender_domains`: hoca ve bölüm maillerinin alan adı (Koç için hazır: `ku.edu.tr`)
@@ -100,6 +119,8 @@ python tests/make_samples.py                                   # sahte örnek ma
 python main.py --source eml --config tests/test_config.yaml --now 2026-10-23T20:00   # → site/index.html
 python -m pytest -q tests/test_core.py                         # birim testleri
 pip install playwright && python tests/check_mobile.py site/index.html   # 360/390/430px testi
+SUPABASE_URL=https://example.supabase.co SUPABASE_KEY=x SYNC_KEY=$(python3 -c "import secrets;print(secrets.token_hex(32))") \
+  python main.py --source eml --config tests/test_config.yaml && python tests/check_tasks.py site/index.html   # görev/senkron testi
 ```
 
 ## Sistemi durdurmak

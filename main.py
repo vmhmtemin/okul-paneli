@@ -12,6 +12,9 @@ Ortam değişkenleri (GitHub'da "Secrets" olarak girilir):
     GMAIL_APP_PASSWORD  Gmail Uygulama Şifresi (16 harf)
     NOTIFY_TO           özet mailinin gideceği adres (boşsa GMAIL_USER)
     PANEL_URL           GitHub Pages linki (özet mailindeki buton için)
+    SUPABASE_URL        (isteğe bağlı) görev senkronu için Supabase proje adresi
+    SUPABASE_KEY        (isteğe bağlı) Supabase "publishable" anahtarı
+    SYNC_KEY            (isteğe bağlı) en az 32 karakterlik gizli senkron anahtarı
 """
 from __future__ import annotations
 
@@ -72,8 +75,17 @@ def main() -> int:
 
     # 3) Paneli üret
     report = build_report(analyzed, now, config)
-    out = render_panel(report, args.out)
-    print(f"Panel yazıldı → {out}  ({len(report.todos)} yapılacak, {report.new_count} yeni)")
+    sync = None
+    sb_url = os.environ.get("SUPABASE_URL", "").strip().rstrip("/")
+    sb_key = os.environ.get("SUPABASE_KEY", "").strip()
+    sync_key = os.environ.get("SYNC_KEY", "").strip()
+    if sb_url and sb_key and len(sync_key) >= 32:
+        sync = {"url": sb_url, "key": sb_key, "syncKey": sync_key}
+    elif sb_url or sb_key or sync_key:
+        print("UYARI: Senkron ayarları eksik/hatalı; görevler sadece cihazda saklanacak.")
+    out = render_panel(report, args.out, sync)
+    print(f"Panel yazıldı → {out}  ({len(report.todos)} yapılacak, {report.new_count} yeni, "
+          f"senkron: {'açık' if sync else 'kapalı'})")
 
     # 4) Bildirim
     if args.send:

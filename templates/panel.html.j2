@@ -154,6 +154,94 @@
   .btn.secondary { background: var(--surface-2); color: var(--text); border: 1px solid var(--line); }
   @media (prefers-color-scheme: dark) { .btn { color: #0f1220; } .btn.secondary { color: var(--text); } }
 
+  /* ---------- Görev ekleme ---------- */
+  .add-btn {
+    width: 100%; min-height: 48px; margin: 0 0 10px; border-radius: 12px; border: 1.5px dashed var(--accent);
+    background: color-mix(in srgb, var(--accent) 8%, var(--surface)); color: var(--accent);
+    font: inherit; font-weight: 600; cursor: pointer;
+  }
+  .add-btn:active { background: color-mix(in srgb, var(--accent) 16%, var(--surface)); }
+  .bucket.overdue { color: var(--k-exam); }
+  .todo.overdue .when { color: var(--k-exam); }
+  .tag.own { color: #7a3fc4; background: #f2eafd; }
+  @media (prefers-color-scheme: dark) { .tag.own { color: #c9a4ff; background: #2d2340; } }
+  .rel-plain::before { content: "· "; }
+  .group { overflow-wrap: anywhere; }
+  .sync-status { font-size: .8rem; color: var(--muted); margin-top: 8px; min-height: 1.2em; }
+  .sync-status.ok { color: var(--k-meeting); }
+  .sync-status.offline { color: var(--k-followup); }
+  button.icon-btn { background: none; border: 0; font: inherit; font-size: .8rem; font-weight: 600; cursor: pointer; }
+
+  /* ---------- Takvim ---------- */
+  .cal { padding: 8px 4px 12px; }
+  .cal-head { display: flex; align-items: center; justify-content: space-between; padding: 0 0 6px; }
+  .cal-title { font-weight: 700; }
+  .cal-nav {
+    min-width: 44px; min-height: 44px; border: 0; border-radius: 10px; background: none;
+    color: var(--text); font-size: 1.6rem; line-height: 1; cursor: pointer;
+  }
+  .cal-nav:active { background: var(--surface-2); }
+  .cal-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 1px; }
+  .cal-dow span { text-align: center; font-size: .7rem; color: var(--muted); padding: 2px 0 4px; }
+  .cal-cell {
+    min-height: 46px; border: 0; border-radius: 10px; background: none; color: var(--text);
+    display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+    padding: 6px 0 4px; font: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent;
+  }
+  .cal-cell .num { font-size: .9rem; line-height: 1.2; font-variant-numeric: tabular-nums; }
+  .cal-cell.today .num { color: var(--accent); font-weight: 700; }
+  .cal-cell.selected { background: var(--accent); }
+  .cal-cell.selected .num { color: #fff; font-weight: 700; }
+  @media (prefers-color-scheme: dark) { .cal-cell.selected .num { color: #0f1220; } }
+  .dots { display: flex; gap: 3px; margin-top: 4px; min-height: 6px; align-items: center; }
+  .dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--k-reminder); flex-shrink: 0; }
+  .dot.exam { background: var(--k-exam); } .dot.assignment { background: var(--k-assignment); }
+  .dot.meeting { background: var(--k-meeting); } .dot.followup { background: var(--k-followup); }
+  .dot.own { background: #8b5cf6; } .dot.done { opacity: .35; }
+  .cal-cell.selected .dot { box-shadow: 0 0 0 1.5px #fff; }
+  .dots .more { font-style: normal; font-size: .6rem; line-height: 1; color: var(--muted); }
+  .cal-legend { display: flex; flex-wrap: wrap; gap: 4px 12px; padding: 10px 6px 4px; font-size: .72rem; color: var(--muted); }
+  .cal-legend .dot { margin-right: 4px; vertical-align: 1px; }
+  .cal-day { border-top: 1px solid var(--line); margin-top: 8px; padding: 10px 6px 0; }
+  .cal-day-title { font-weight: 600; margin-bottom: 6px; }
+  .cal-none { color: var(--muted); font-size: .9rem; padding: 4px 0 8px; }
+  .cal-item {
+    display: flex; gap: 10px; align-items: flex-start; width: 100%; min-height: 44px; padding: 8px 4px;
+    border: 0; border-top: 1px solid var(--line); background: none; color: var(--text); font: inherit; text-align: left;
+  }
+  button.cal-item { cursor: pointer; }
+  .cal-item .dot { margin-top: 7px; }
+  .cal-item-text { display: flex; flex-direction: column; min-width: 0; }
+  .cal-item-title { font-weight: 600; }
+  .cal-item-meta { font-size: .8rem; color: var(--muted); }
+  .cal-item.done .cal-item-title { text-decoration: line-through; color: var(--muted); }
+  .cal-add { margin-top: 10px; width: 100%; }
+
+  /* ---------- Görev formu (alt sayfa) ---------- */
+  dialog#task-sheet {
+    width: 100%; max-width: 560px; margin: auto auto 0; padding: 0; border: 0;
+    border-radius: 18px 18px 0 0; background: var(--surface); color: var(--text);
+    max-height: 92vh; overflow: auto;
+  }
+  @media (min-width: 600px) { dialog#task-sheet { margin: auto; border-radius: 18px; } }
+  dialog#task-sheet::backdrop { background: rgba(0,0,0,.45); }
+  #task-form { padding: 18px 16px calc(16px + env(safe-area-inset-bottom)); }
+  #task-form h3 { margin: 0 0 12px; font-size: 1.1rem; }
+  .field { display: flex; flex-direction: column; gap: 4px; font-size: .85rem; font-weight: 600; margin-bottom: 12px; min-width: 0; }
+  .field small { font-weight: 400; color: var(--muted); }
+  .field input, .field textarea {
+    font: inherit; font-size: 16px; font-weight: 400; color: var(--text); background: var(--surface-2);
+    border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; min-height: 44px; width: 100%;
+  }
+  .field input:focus, .field textarea:focus { outline: 2px solid var(--accent); outline-offset: 0; }
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .form-error { color: var(--k-exam); font-size: .85rem; min-height: 1.2em; margin: 0 0 8px; }
+  .sheet-actions { display: flex; gap: 8px; align-items: center; }
+  .sheet-actions .spacer { flex: 1; }
+  .sheet-actions .btn { border: 0; font: inherit; font-weight: 600; cursor: pointer; }
+  .sheet-actions .btn.secondary { border: 1px solid var(--line); }
+  .btn.danger { background: var(--k-exam-bg); color: var(--k-exam); }
+
   footer { margin-top: 28px; text-align: center; color: var(--muted); font-size: .78rem; }
 
   @media (min-width: 640px) {
@@ -171,7 +259,7 @@
     </div>
     <div class="stats" aria-label="Özet sayılar">
       <div class="stat"><b>{{ r.new_count }}</b><span>Yeni</span></div>
-      <div class="stat {{ 'urgent' if r.urgent_count }}"><b>{{ r.urgent_count }}</b><span>48 saat</span></div>
+      <div class="stat {{ 'urgent' if r.urgent_count }}" id="stat-urgent"><b>{{ r.urgent_count }}</b><span>48 saat</span></div>
     </div>
   </div>
 </header>
@@ -186,43 +274,31 @@
 
   <section aria-labelledby="h-todo" id="todo-section">
     <h2 id="h-todo">
-      <span>Yapılacaklar ({{ r.todos|length }})</span>
-      {% if r.todos %}<button class="toggle" id="toggle-done" type="button" aria-pressed="false">Bitenleri gizle</button>{% endif %}
+      <span>Yapılacaklar (<span id="todo-count">0</span>)</span>
+      <button class="toggle" id="toggle-done" type="button" aria-pressed="false">Bitenleri gizle</button>
     </h2>
-    <div class="panel" id="todo-list">
-      {% if not r.todos %}
-        <div class="empty">Şu an bekleyen bir iş görünmüyor. 🎉</div>
-      {% endif %}
-      {% set buckets = [("urgent", "48 saat içinde"), ("soon", "Bu hafta"), ("later", "Daha sonra"), ("none", "Tarihsiz – yanıt / takip")] %}
-      {% for key, label in buckets %}
-        {% set items = r.todos | selectattr("urgency", "equalto", key) | list %}
-        {% if items %}
-          <div class="bucket {{ key }}">{{ label }}</div>
-          {% for t in items %}
-          <div class="todo {{ t.urgency }}" data-id="{{ t.id }}">
-            <label>
-              <input type="checkbox" class="check" data-id="{{ t.id }}" aria-label="Tamamlandı: {{ t.title }}">
-              <span class="todo-body">
-                <span class="todo-title">{{ t.title }}</span>
-                <span class="todo-meta">
-                  <span class="tag {{ t.kind }}">{{ t.kind_label }}</span>
-                  <span>{{ t.group }}</span>
-                </span>
-                <span class="todo-meta">
-                  <span class="when">{{ t.when_text }}</span>
-                  {% if t.rel_text in ("bugün", "yarın") %}<span class="tag rel">{{ t.rel_text }}</span>
-                  {% elif t.rel_text %}<span>· {{ t.rel_text }}</span>{% endif %}
-                </span>
-              </span>
-            </label>
-            {% if t.link %}
-              <a class="icon-btn" href="{{ t.link.url }}" target="_blank" rel="noopener noreferrer"
-                 aria-label="{{ t.link.label }} bağlantısını aç">Aç ↗</a>
-            {% endif %}
-          </div>
-          {% endfor %}
-        {% endif %}
-      {% endfor %}
+    <button class="add-btn" id="add-task" type="button"><span aria-hidden="true">＋</span> Görev ekle</button>
+    <div class="panel" id="todo-list"><div class="empty">Yükleniyor…</div></div>
+    <div class="sync-status" id="sync-status" role="status" aria-live="polite"></div>
+  </section>
+
+  <section aria-labelledby="h-cal">
+    <h2 id="h-cal">Takvim</h2>
+    <div class="panel cal">
+      <div class="cal-head">
+        <button class="cal-nav" id="cal-prev" type="button" aria-label="Önceki ay">‹</button>
+        <div class="cal-title" id="cal-title"></div>
+        <button class="cal-nav" id="cal-next" type="button" aria-label="Sonraki ay">›</button>
+      </div>
+      <div class="cal-grid cal-dow" aria-hidden="true">
+        <span>Pzt</span><span>Sal</span><span>Çar</span><span>Per</span><span>Cum</span><span>Cmt</span><span>Paz</span>
+      </div>
+      <div class="cal-grid" id="cal-grid"></div>
+      <div class="cal-legend" aria-hidden="true">
+        <span><i class="dot exam"></i>Sınav</span><span><i class="dot assignment"></i>Ödev</span>
+        <span><i class="dot meeting"></i>Toplantı</span><span><i class="dot own"></i>Kendi görevim</span>
+      </div>
+      <div class="cal-day" id="cal-day"></div>
     </div>
   </section>
 
@@ -265,50 +341,383 @@
   {% endif %}
   {% endfor %}
 
-  <footer>Otomatik oluşturuldu · Günde 2 kez güncellenir<br>İşaretlediğin kutular sadece bu cihazda saklanır.</footer>
+  <footer>Otomatik oluşturuldu · Mail taraması günde 2 kez yapılır</footer>
 </main>
 
+<dialog id="task-sheet" aria-labelledby="sheet-title">
+  <form id="task-form" method="dialog" novalidate>
+    <h3 id="sheet-title">Görev ekle</h3>
+    <label class="field">Başlık
+      <input id="f-title" name="title" type="text" maxlength="200" required autocomplete="off"
+             placeholder="örn. MATH 107 çalışma kağıdı">
+    </label>
+    <div class="field-row">
+      <label class="field">Tarih
+        <input id="f-date" name="date" type="date">
+      </label>
+      <label class="field">Saat <small>(isteğe bağlı)</small>
+        <input id="f-time" name="time" type="time">
+      </label>
+    </div>
+    <label class="field">Not <small>(isteğe bağlı)</small>
+      <textarea id="f-note" name="note" rows="2" maxlength="1000"></textarea>
+    </label>
+    <p class="form-error" id="f-error" role="alert"></p>
+    <div class="sheet-actions">
+      <button type="button" class="btn danger" id="f-delete" hidden>Sil</button>
+      <span class="spacer"></span>
+      <button type="button" class="btn secondary" id="f-cancel">Vazgeç</button>
+      <button type="submit" class="btn" id="f-save">Kaydet</button>
+    </div>
+  </form>
+</dialog>
+
+<script type="application/json" id="panel-data">{{ panel_data|safe }}</script>
 <script>
 (function () {
-  var KEY = "mail-panel-done";
-  var done = {};
-  try { done = JSON.parse(localStorage.getItem(KEY) || "{}") || {}; } catch (e) { done = {}; }
-  function save() { try { localStorage.setItem(KEY, JSON.stringify(done)); } catch (e) {} }
+  "use strict";
+  var DATA = JSON.parse(document.getElementById("panel-data").textContent);
+  var SYNC = DATA.sync;                       // null → sadece bu cihaz
+  var MONTHS = ["Ocak","Şubat","Mart","Nisan","Mayıs","Haziran","Temmuz","Ağustos","Eylül","Ekim","Kasım","Aralık"];
+  var DAYS = ["Pazar","Pazartesi","Salı","Çarşamba","Perşembe","Cuma","Cumartesi"];
+  var H48 = 48 * 3600e3, D7 = 7 * 864e5;
 
-  var boxes = document.querySelectorAll(".check");
-  for (var i = 0; i < boxes.length; i++) {
-    (function (box) {
-      var row = box.closest(".todo");
-      if (done[box.dataset.id]) { box.checked = true; row.classList.add("done"); }
-      box.addEventListener("change", function () {
-        if (box.checked) { done[box.dataset.id] = Date.now(); } else { delete done[box.dataset.id]; }
-        row.classList.toggle("done", box.checked);
-        save();
-      });
-    })(boxes[i]);
+  // ------------------------------------------------ yerel depolama
+  var LS = {
+    get: function (k, d) { try { var v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
+    set: function (k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+  };
+  var state = {
+    tasks: LS.get("op-tasks", []),                       // kendi görevler
+    mailDone: LS.get("op-mail-done", []),                // bitirilen mail işleri (id listesi)
+    pending: LS.get("op-pending", []),                   // gönderilemeyen değişiklikler
+    hideDone: LS.get("op-hide-done", false),
+    status: SYNC ? "syncing" : "local"
+  };
+  // eski sürümün işaretlerini taşı
+  var legacy = LS.get("mail-panel-done", null);
+  if (legacy) {
+    Object.keys(legacy).forEach(function (k) { if (state.mailDone.indexOf(k) < 0) state.mailDone.push(k); });
+    try { localStorage.removeItem("mail-panel-done"); } catch (e) {}
+  }
+  function persist() {
+    LS.set("op-tasks", state.tasks); LS.set("op-mail-done", state.mailDone);
+    LS.set("op-pending", state.pending); LS.set("op-hide-done", state.hideDone);
   }
 
-  // 60 günden eski işaretleri temizle (liste sonsuza kadar büyümesin)
-  var cutoff = Date.now() - 60 * 864e5;
-  Object.keys(done).forEach(function (k) { if (done[k] < cutoff) delete done[k]; });
-  save();
-
-  var toggle = document.getElementById("toggle-done");
-  var list = document.getElementById("todo-list");
-  if (toggle) {
-    var hidden = false;
-    try { hidden = localStorage.getItem(KEY + "-hide") === "1"; } catch (e) {}
-    function apply() {
-      list.classList.toggle("hide-done", hidden);
-      toggle.textContent = hidden ? "Bitenleri göster" : "Bitenleri gizle";
-      toggle.setAttribute("aria-pressed", hidden ? "true" : "false");
-    }
-    apply();
-    toggle.addEventListener("click", function () {
-      hidden = !hidden; apply();
-      try { localStorage.setItem(KEY + "-hide", hidden ? "1" : "0"); } catch (e) {}
+  function uid() {
+    if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
+    return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
+      var r = Math.random() * 16 | 0; return (c === "x" ? r : (r & 3 | 8)).toString(16);
     });
   }
+
+  // ------------------------------------------------ sunucu (Supabase)
+  function rpc(fn, body) {
+    body.p_key = SYNC.syncKey;
+    return fetch(SYNC.url + "/rest/v1/rpc/" + fn, {
+      method: "POST",
+      headers: { "apikey": SYNC.key, "Content-Type": "application/json" },
+      body: JSON.stringify(body)
+    }).then(function (r) {
+      if (!r.ok) return r.text().then(function (t) { throw new Error(r.status + " " + t); });
+      return r.text().then(function (t) { return t ? JSON.parse(t) : null; });
+    });
+  }
+  function opToCall(op) {
+    if (op.type === "upsert") {
+      var t = op.task;
+      return rpc("panel_task_upsert", { p_id: t.id, p_title: t.title, p_due_date: t.due_date || null,
+        p_due_time: t.due_time || null, p_note: t.note || null, p_done: !!t.done });
+    }
+    if (op.type === "delete") return rpc("panel_task_delete", { p_id: op.id });
+    return rpc("panel_mail_done_set", { p_item_id: op.id, p_done: !!op.done });
+  }
+  var flushing = null;
+  function flush() {                                     // bekleyenleri sırayla gönder
+    if (!SYNC) return Promise.resolve(true);
+    if (flushing) return flushing;
+    flushing = (function next() {
+      if (!state.pending.length) return Promise.resolve(true);
+      return opToCall(state.pending[0]).then(function () {
+        state.pending.shift(); persist(); return next();
+      });
+    })().then(function (ok) { flushing = null; return ok; },
+              function (e) { flushing = null; throw e; });
+    return flushing;
+  }
+  function pull() {
+    if (!SYNC) { render(); return; }
+    setStatus("syncing");
+    flush().then(function () { return rpc("panel_sync", {}); }).then(function (res) {
+      if (state.pending.length) return;                  // arada yeni değişiklik oldu; sonraki turda
+      state.tasks = res.tasks || [];
+      state.mailDone = res.mail_done || [];
+      persist(); setStatus("ok"); render();
+    }).catch(function () { setStatus("offline"); render(); });
+  }
+  function queue(op) {
+    state.pending.push(op); persist(); render();
+    if (!SYNC) { state.pending = []; persist(); return; }
+    setStatus("syncing");
+    flush().then(function () { setStatus("ok"); }, function () { setStatus("offline"); });
+  }
+  function setStatus(s) {
+    state.status = s;
+    var el = document.getElementById("sync-status");
+    var txt = {
+      local: "Görevler bu cihazda saklanıyor.",
+      syncing: "⟳ Senkronize ediliyor…",
+      ok: "✓ Senkronize — tüm cihazlarında aynı liste.",
+      offline: "⚠ Bağlantı yok — değişiklikler bu cihazda bekliyor, bağlanınca gönderilecek."
+    }[s];
+    el.textContent = txt; el.className = "sync-status " + s;
+  }
+
+  // ------------------------------------------------ verileri birleştir
+  function ownDue(t) {
+    if (!t.due_date) return null;
+    var p = t.due_date.split("-"), hm = (t.due_time || "23:59").split(":");
+    return new Date(+p[0], +p[1] - 1, +p[2], +hm[0], +hm[1]);
+  }
+  function items() {
+    var list = DATA.mailTodos.map(function (m) {
+      return { src: "mail", id: m.id, title: m.title, kind: m.kind, kindLabel: m.kindLabel, group: m.group,
+               due: m.due ? new Date(m.due) : null, hasTime: m.hasTime, link: m.link,
+               done: state.mailDone.indexOf(m.id) >= 0 };
+    });
+    state.tasks.forEach(function (t) {
+      list.push({ src: "own", id: t.id, title: t.title, kind: "own", kindLabel: "Kendi görevim",
+                  group: t.note || "", due: ownDue(t), hasTime: !!t.due_time, done: !!t.done, task: t });
+    });
+    return list;
+  }
+  function bucketOf(it, now) {
+    if (!it.due) return "none";
+    var d = it.due - now;
+    if (d < 0) return it.src === "own" ? "overdue" : "gone";   // mail işi geçtiyse gizle
+    if (d <= H48) return "urgent";
+    if (d <= D7) return "soon";
+    return "later";
+  }
+  function sameDay(a, b) { return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate(); }
+  function pad(n) { return (n < 10 ? "0" : "") + n; }
+  function fmtWhen(it) {
+    if (!it.due) return "Tarih yok";
+    var d = it.due;
+    return DAYS[d.getDay()] + ", " + d.getDate() + " " + MONTHS[d.getMonth()] +
+           (it.hasTime ? " · " + pad(d.getHours()) + ":" + pad(d.getMinutes()) : "");
+  }
+  function relText(it, now) {
+    if (!it.due) return "";
+    var t0 = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    var t1 = new Date(it.due.getFullYear(), it.due.getMonth(), it.due.getDate());
+    var days = Math.round((t1 - t0) / 864e5);
+    if (it.due < now) return days === 0 ? "bugündü" : (-days) + " gün gecikti";
+    if (days === 0) return "bugün";
+    if (days === 1) return "yarın";
+    return days + " gün sonra";
+  }
+
+  // ------------------------------------------------ DOM yardımcıları
+  function el(tag, cls, text) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text != null) e.textContent = text;
+    return e;
+  }
+
+  function todoRow(it, now) {
+    var b = bucketOf(it, now);
+    var row = el("div", "todo " + b + (it.done ? " done" : ""));
+    var label = el("label");
+    var cb = el("input", "check"); cb.type = "checkbox"; cb.checked = it.done;
+    cb.setAttribute("aria-label", "Tamamlandı: " + it.title);
+    cb.addEventListener("change", function () { toggleDone(it, cb.checked); });
+    var body = el("span", "todo-body");
+    body.appendChild(el("span", "todo-title", it.title));
+    var meta = el("span", "todo-meta");
+    meta.appendChild(el("span", "tag " + it.kind, it.kindLabel));
+    if (it.group) meta.appendChild(el("span", "group", it.group));
+    body.appendChild(meta);
+    var meta2 = el("span", "todo-meta");
+    meta2.appendChild(el("span", "when", fmtWhen(it)));
+    var rel = relText(it, now);
+    if (rel) meta2.appendChild(el("span", /bugün|yarın|gecikti/.test(rel) ? "tag rel" : "rel-plain", rel));
+    body.appendChild(meta2);
+    label.appendChild(cb); label.appendChild(body);
+    row.appendChild(label);
+    if (it.src === "own") {
+      var edit = el("button", "icon-btn", "Düzenle"); edit.type = "button";
+      edit.setAttribute("aria-label", "Düzenle: " + it.title);
+      edit.addEventListener("click", function () { openSheet(it.task); });
+      row.appendChild(edit);
+    } else if (it.link) {
+      var a = el("a", "icon-btn", "Aç ↗"); a.href = it.link.url; a.target = "_blank"; a.rel = "noopener noreferrer";
+      a.setAttribute("aria-label", it.link.label + " bağlantısını aç");
+      row.appendChild(a);
+    }
+    return row;
+  }
+
+  var BUCKETS = [["overdue", "Gecikmiş"], ["urgent", "48 saat içinde"], ["soon", "Bu hafta"],
+                 ["later", "Daha sonra"], ["none", "Tarihsiz"]];
+
+  function renderTodos(all, now) {
+    var list = document.getElementById("todo-list");
+    list.textContent = "";
+    var visible = all.filter(function (it) { return bucketOf(it, now) !== "gone"; });
+    var open = visible.filter(function (it) { return !it.done; }).length;
+    document.getElementById("todo-count").textContent = open;
+    var shown = 0;
+    BUCKETS.forEach(function (bk) {
+      var rows = visible.filter(function (it) { return bucketOf(it, now) === bk[0] && !(state.hideDone && it.done); });
+      if (!rows.length) return;
+      rows.sort(function (a, b) { return (a.due || 8.64e15) - (b.due || 8.64e15); });
+      list.appendChild(el("div", "bucket " + bk[0], bk[1]));
+      rows.forEach(function (it) { list.appendChild(todoRow(it, now)); shown++; });
+    });
+    if (!shown) list.appendChild(el("div", "empty", visible.length ? "Hepsi bitti! 🎉" : "Şu an bekleyen bir iş görünmüyor. 🎉"));
+    var urgent = visible.filter(function (it) {
+      var b = bucketOf(it, now); return !it.done && (b === "urgent" || b === "overdue");
+    }).length;
+    var stat = document.getElementById("stat-urgent");
+    if (stat) { stat.querySelector("b").textContent = urgent; stat.classList.toggle("urgent", urgent > 0); }
+    var tg = document.getElementById("toggle-done");
+    tg.textContent = state.hideDone ? "Bitenleri göster" : "Bitenleri gizle";
+    tg.setAttribute("aria-pressed", state.hideDone ? "true" : "false");
+  }
+
+  // ------------------------------------------------ takvim
+  var cal = { y: new Date().getFullYear(), m: new Date().getMonth(), sel: new Date() };
+  function renderCalendar(all, now) {
+    document.getElementById("cal-title").textContent = MONTHS[cal.m] + " " + cal.y;
+    var grid = document.getElementById("cal-grid");
+    grid.textContent = "";
+    var first = new Date(cal.y, cal.m, 1);
+    var offset = (first.getDay() + 6) % 7;                // Pazartesi başlangıç
+    var daysIn = new Date(cal.y, cal.m + 1, 0).getDate();
+    for (var i = 0; i < offset; i++) grid.appendChild(el("span", "cal-empty"));
+    for (var d = 1; d <= daysIn; d++) {
+      (function (day) {
+        var date = new Date(cal.y, cal.m, day);
+        var its = all.filter(function (it) { return it.due && sameDay(it.due, date) && bucketOf(it, now) !== "gone"; });
+        var btn = el("button", "cal-cell"); btn.type = "button";
+        if (sameDay(date, now)) btn.classList.add("today");
+        if (sameDay(date, cal.sel)) btn.classList.add("selected");
+        btn.appendChild(el("span", "num", String(day)));
+        var dots = el("span", "dots");
+        its.slice(0, 3).forEach(function (it) { dots.appendChild(el("i", "dot " + it.kind + (it.done ? " done" : ""))); });
+        if (its.length > 3) dots.appendChild(el("i", "more", "+"));
+        btn.appendChild(dots);
+        btn.setAttribute("aria-label", day + " " + MONTHS[cal.m] + (its.length ? ", " + its.length + " iş" : ""));
+        btn.addEventListener("click", function () { cal.sel = date; render(); });
+        grid.appendChild(btn);
+      })(d);
+    }
+    // seçili günün listesi
+    var box = document.getElementById("cal-day");
+    box.textContent = "";
+    var sel = cal.sel;
+    box.appendChild(el("div", "cal-day-title", DAYS[sel.getDay()] + ", " + sel.getDate() + " " + MONTHS[sel.getMonth()]));
+    var dayItems = all.filter(function (it) { return it.due && sameDay(it.due, sel) && bucketOf(it, now) !== "gone"; })
+                      .sort(function (a, b) { return a.due - b.due; });
+    if (!dayItems.length) box.appendChild(el("div", "cal-none", "Bu gün için bir şey yok."));
+    dayItems.forEach(function (it) {
+      var r = el(it.src === "own" ? "button" : "div", "cal-item" + (it.done ? " done" : ""));
+      if (it.src === "own") { r.type = "button"; r.addEventListener("click", function () { openSheet(it.task); }); }
+      r.appendChild(el("span", "dot " + it.kind));
+      var t = el("span", "cal-item-text");
+      t.appendChild(el("span", "cal-item-title", it.title));
+      t.appendChild(el("span", "cal-item-meta", (it.hasTime ? pad(it.due.getHours()) + ":" + pad(it.due.getMinutes()) + " · " : "") + it.kindLabel + (it.group ? " · " + it.group : "")));
+      r.appendChild(t);
+      box.appendChild(r);
+    });
+    var add = el("button", "btn secondary cal-add", "＋ Bu güne görev ekle"); add.type = "button";
+    add.addEventListener("click", function () {
+      openSheet(null, sel.getFullYear() + "-" + pad(sel.getMonth() + 1) + "-" + pad(sel.getDate()));
+    });
+    box.appendChild(add);
+  }
+
+  function render() {
+    var now = new Date(), all = items();
+    renderTodos(all, now);
+    renderCalendar(all, now);
+  }
+
+  // ------------------------------------------------ işlemler
+  function toggleDone(it, done) {
+    if (it.src === "mail") {
+      var i = state.mailDone.indexOf(it.id);
+      if (done && i < 0) state.mailDone.push(it.id);
+      if (!done && i >= 0) state.mailDone.splice(i, 1);
+      queue({ type: "mail", id: it.id, done: done });
+    } else {
+      it.task.done = done;
+      queue({ type: "upsert", task: it.task });
+    }
+  }
+
+  var sheet = document.getElementById("task-sheet"), editing = null, delArmed = false;
+  var fTitle = document.getElementById("f-title"), fDate = document.getElementById("f-date"),
+      fTime = document.getElementById("f-time"), fNote = document.getElementById("f-note"),
+      fErr = document.getElementById("f-error"), fDel = document.getElementById("f-delete");
+  function openSheet(task, presetDate) {
+    editing = task || null; delArmed = false;
+    document.getElementById("sheet-title").textContent = task ? "Görevi düzenle" : "Görev ekle";
+    fTitle.value = task ? task.title : "";
+    fDate.value = task ? (task.due_date || "") : (presetDate || "");
+    fTime.value = task ? (task.due_time || "") : "";
+    fNote.value = task ? (task.note || "") : "";
+    fErr.textContent = "";
+    fDel.hidden = !task; fDel.textContent = "Sil";
+    if (sheet.showModal) sheet.showModal(); else sheet.setAttribute("open", "");
+    setTimeout(function () { fTitle.focus(); }, 50);
+  }
+  function closeSheet() { if (sheet.close) sheet.close(); else sheet.removeAttribute("open"); }
+  document.getElementById("add-task").addEventListener("click", function () { openSheet(null); });
+  document.getElementById("f-cancel").addEventListener("click", closeSheet);
+  sheet.addEventListener("click", function (e) { if (e.target === sheet) closeSheet(); });   // dışına dokununca kapat
+  document.getElementById("task-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var title = fTitle.value.trim();
+    if (!title) { fErr.textContent = "Başlık boş olamaz."; fTitle.focus(); return; }
+    if (fTime.value && !fDate.value) { fErr.textContent = "Saat girdiysen tarihi de seç."; fDate.focus(); return; }
+    var t = editing || { id: uid(), done: false };
+    t.title = title; t.due_date = fDate.value || null; t.due_time = fTime.value || null;
+    t.note = fNote.value.trim() || null;
+    if (!editing) state.tasks.push(t);
+    if (t.due_date) {                                   // takvimi o güne götür
+      var p = t.due_date.split("-"); cal.y = +p[0]; cal.m = +p[1] - 1; cal.sel = new Date(+p[0], +p[1] - 1, +p[2]);
+    }
+    closeSheet();
+    queue({ type: "upsert", task: t });
+  });
+  fDel.addEventListener("click", function () {
+    if (!delArmed) { delArmed = true; fDel.textContent = "Emin misin? Sil"; return; }
+    var id = editing.id;
+    state.tasks = state.tasks.filter(function (x) { return x.id !== id; });
+    closeSheet();
+    queue({ type: "delete", id: id });
+  });
+
+  document.getElementById("toggle-done").addEventListener("click", function () {
+    state.hideDone = !state.hideDone; persist(); render();
+  });
+  document.getElementById("cal-prev").addEventListener("click", function () {
+    cal.m--; if (cal.m < 0) { cal.m = 11; cal.y--; } render();
+  });
+  document.getElementById("cal-next").addEventListener("click", function () {
+    cal.m++; if (cal.m > 11) { cal.m = 0; cal.y++; } render();
+  });
+  // Uygulamaya geri dönünce (başka cihazda değişmiş olabilir) yenile
+  document.addEventListener("visibilitychange", function () { if (!document.hidden) pull(); });
+  window.addEventListener("online", pull);
+
+  setStatus(state.status);
+  render();
+  pull();
 })();
 </script>
 </body>
