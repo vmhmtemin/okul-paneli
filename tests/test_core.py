@@ -115,16 +115,41 @@ def test_own_summary_mail_is_ignored():
 
 
 # --------------------------------------------- IMAP / SMTP (sahte sunucuyla)
-def test_fetch_imap_readonly_and_peek():
-    raw = (SAMPLES / "01_coe203_proje.eml").read_bytes()
+def test_fetch_imap_batches_and_peeks_partial():
+    raws = [(SAMPLES / f).read_bytes() for f in ("01_coe203_proje.eml", "04_gdg_toplanti.eml")]
+
+    def split(raw):
+        h, _, b = raw.partition(b"\n\n")
+        return h + b"\n\n", b
+
+    def fake_uid(cmd, *a):
+        if cmd == "search":
+            return "OK", [b"7 9"]
+        resp = []
+        for n, (uid, raw) in enumerate(zip((b"7", b"9"), raws), 1):
+            h, b = split(raw)
+            resp.append((f"{n} (UID ".encode() + uid + b" BODY[HEADER] {%d}" % len(h), h))
+            resp.append((b" BODY[TEXT]<0> {%d}" % len(b), b))
+            resp.append(b")")
+        return "OK", resp
+
     imap = mock.MagicMock()
     imap.__enter__.return_value = imap
-    imap.uid.side_effect = lambda cmd, *a: ("OK", [b"7"]) if cmd == "search" else ("OK", [(b"7 (BODY[] {1}", raw)])
+    imap.uid.side_effect = fake_uid
     with mock.patch.object(fetch.imaplib, "IMAP4_SSL", return_value=imap):
         mails = fetch.fetch_imap("u@gmail.com", "pw", 14, TZ)
     imap.select.assert_called_once_with("INBOX", readonly=True)
-    assert imap.uid.call_args_list[1].args[2] == "(BODY.PEEK[])"   # okundu işaretlemez
-    assert mails[0].subject.startswith("COE203")
+    fetch_call = imap.uid.call_args_list[1].args
+    assert fetch_call[1] == "7,9"                                   # tek istekte toplu
+    assert fetch_call[2].startswith("(BODY.PEEK[HEADER] BODY.PEEK[TEXT]<0.")   # okundu yapmaz, kısmi
+    assert [m.subject for m in mails] == ["COE203 - Proje 1 Teslim Tarihi", "GDG çekirdek ekip toplantısı"]
+    assert "30 Ekim 2026" in mails[0].body
+
+
+def test_truncated_html_mail_still_parses():
+    raw = (SAMPLES / "02_math101_quiz_html.eml").read_bytes()
+    m = fetch._message_to_mail("1", raw[: len(raw) - 120], TZ)       # sonu kesik
+    assert m is not None and "Quiz 2" in m.body
 
 
 def test_send_summary_uses_ssl_and_login():
