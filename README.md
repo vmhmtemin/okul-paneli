@@ -19,7 +19,10 @@ Normal Gmail şifren **kullanılmaz**. Sadece bu sistem için ayrı bir şifre o
 2. <https://myaccount.google.com/apppasswords> adresine git → ad olarak `Okul Paneli` yaz → **Oluştur**.
 3. Çıkan **16 harfli şifreyi** bir yere not et. Sadece bir kez gösterilir.
 
-> Okul mailin Gmail'de değilse (ör. Outlook), okul mail ayarlarından gelen mailleri bu Gmail adresine **yönlendir**.
+> **"Bu ayar kullanılamıyor" diyorsa** (okul hesaplarında, ör. `@ku.edu.tr`, okul bunu kapatmış olabilir):
+> 1. Okul Gmail'inde **Ayarlar → Tüm ayarları gör → Yönlendirme ve POP/IMAP → Yönlendirme adresi ekle** → kişisel Gmail adresini yaz, kişisel Gmail'e gelen onay kodunu gir, "Gelen postanın bir kopyasını … adresine yönlendir" seçip **Kaydet**.
+> 2. Uygulama şifresini **kişisel Gmail** hesabında oluştur ve sistemde kişisel Gmail'i kullan. Yönlendirilen maillerde gönderen (hoca, `@ku.edu.tr`) korunduğu için sınıflandırma aynen çalışır.
+> 3. Yönlendirme seçeneği de kapalıysa bu yöntem çalışmaz; o durumda haber ver.
 > İstediğin zaman aynı sayfadan uygulama şifresini silip sistemin erişimini kesebilirsin.
 
 ### 2) GitHub deposunu oluştur

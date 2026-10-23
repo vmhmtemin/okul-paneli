@@ -33,10 +33,10 @@ academic:
 # KULÜPLER: Her kulüp için ad + onu tanıtan kelimeler / adresler
 # -------------------------------------------------------------
 clubs:
-  # ÖRNEK — kendi kulüplerinle değiştir
-  - name: "Örnek Kulüp"
-    keywords: ["örnek kulüp", "ornek kulup"]
-    sender_addresses: []
+  - name: "Business Club"
+    keywords: ["business club", "business kulüp", "business kulup", "businessclub",
+               "business kulübü", "business kulubu"]
+    sender_addresses: []            # kulübün mail adresini buraya ekle (örn. "businessclub@ku.edu.tr")
   - name: "SKS / Öğrenci Kulüpleri Birimi"
     keywords: ["sks", "sağlık kültür spor", "saglik kultur spor", "student clubs"]
     sender_addresses: []
